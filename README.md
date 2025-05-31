@@ -45,10 +45,13 @@ Pēc Ansible izpildes:
 │       └── entrypoint.sh
 ```
 
-## NTP serveri:
+## Datacenter AAA:
+    * hostname1, hostname4
+    * NTP server: ntp-aaa
 
-* dc_aaa → 172.20.10.20
-* dc_zzz → 172.20.20.20
+## Datacenter ZZZ:
+    * hostname2, hostname3, hostname5
+    * NTP server: ntp-zzz
 
 
 ## Instalēšana
@@ -79,44 +82,17 @@ Palaid Ansible playbook:
 ../Project_A/ansible-playbook -i inventory.yml playbook.yml
 ```
 
+## Testi
 
+### Chrony
+Run the following command inside a host:
+```
+chronyc tracking
+chronyc sources -v
+```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Uzstādi Docker vidi:
-
-cd Project_D
-docker-compose up -d
-
-Veic konfigurāciju ar Ansible:
-
-cd ../Project_A
-ansible-playbook -i inventory.yml playbook.yml
-
-Prasības
-
-Ansible 2.18+
-
-Docker + docker-compose
-
-Autors
-
-Šis projekts veidots kā mājasdarbs sistēmu administrēšanas kursā.
+### Zabbix
+Check Zabbix frontend:
+* Navigate to Monitoring → Latest Data
+* Filter by hostname* hosts
+You should see metrics like system.uname, system.cpu.load, and others.
