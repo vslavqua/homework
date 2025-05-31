@@ -1,0 +1,226 @@
+services:
+  # --- Squid Proxy Server ---
+  squid:
+    image: ubuntu/squid:latest
+    container_name: squid_proxy
+    hostname: squid_proxy
+    ports:
+      - "3128:3128" # Squid ports
+    volumes:
+      - ./squid.conf:/etc/squid/squid.conf:ro # Squid config
+      - squid_cache:/var/spool/squid # Cache for Squid
+    networks:
+      repo_net:
+        ipv4_address: 172.30.0.10
+      public_net: {}  
+    restart: unless-stopped
+
+  hostname1:
+    build:
+      context: ./host
+      args:
+        APT_PROXY: "http://squid_proxy:3128"
+    container_name: hostname1
+    hostname: hostname1
+    platform: linux/amd64
+    networks:
+      dc_aaa:
+        ipv4_address: 172.20.10.11
+      repo_net:
+        ipv4_address: 172.30.10.11
+    cap_add:
+      - SYS_TIME 
+
+  hostname4:
+    build:
+      context: ./host
+      args:
+        APT_PROXY: "http://squid_proxy:3128"
+    container_name: hostname4
+    hostname: hostname4
+    platform: linux/amd64
+    networks:
+      dc_aaa:
+        ipv4_address: 172.20.10.14
+      repo_net:
+        ipv4_address: 172.30.10.14
+    cap_add:
+      - SYS_TIME 
+
+  hostname2:
+    build:
+      context: ./host
+      args:
+        APT_PROXY: "http://squid_proxy:3128"
+    container_name: hostname2
+    hostname: hostname2
+    platform: linux/amd64
+    networks:
+      dc_zzz:
+        ipv4_address: 172.20.20.12
+      repo_net:
+        ipv4_address: 172.30.20.12
+    cap_add:
+      - SYS_TIME 
+
+  hostname3:
+    build:
+      context: ./host
+      args:
+        APT_PROXY: "http://squid_proxy:3128"
+    container_name: hostname3
+    hostname: hostname3
+    platform: linux/amd64
+    networks:
+      dc_zzz:
+        ipv4_address: 172.20.20.13
+      repo_net:
+        ipv4_address: 172.30.20.13
+    cap_add:
+      - SYS_TIME 
+
+  hostname5:
+    build:
+      context: ./host
+      args:
+        APT_PROXY: "http://squid_proxy:3128"
+    container_name: hostname5
+    hostname: hostname5
+    platform: linux/amd64
+    networks:
+      dc_zzz:
+        ipv4_address: 172.20.20.15
+      repo_net:
+        ipv4_address: 172.30.20.15
+    cap_add:
+      - SYS_TIME    
+
+  # --- NTP Servers ---
+  ntp-aaa:
+    build:
+      context: ./ntp
+      args:
+        DC_NAME: aaa
+    container_name: ntp-aaa
+    hostname: ntp-aaa
+    networks:
+      dc_aaa:
+        ipv4_address: 172.20.10.20
+      public_net: {}      
+    cap_add:
+      - SYS_TIME
+    restart: unless-stopped
+
+  ntp-zzz:
+    build:
+      context: ./ntp
+      args:
+        DC_NAME: zzz
+    container_name: ntp-zzz
+    hostname: ntp-zzz
+    networks:
+      dc_zzz:
+        ipv4_address: 172.20.20.20
+      public_net: {}  
+    cap_add:
+      - SYS_TIME
+    restart: unless-stopped
+
+  # --- Zabbix Database ---
+  zabbix_db:
+    image: mariadb:10.5
+    container_name: zabbix_db
+    environment:
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      MYSQL_ROOT_PASSWORD: zabbix
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uzabbix", "-pzabbix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - zabbix_db_data:/var/lib/mysql
+    networks:
+      dc_zzz:
+        ipv4_address: 172.20.20.21       
+    restart: unless-stopped
+
+  # --- Zabbix Server ---
+  zabbix_server:
+    image: zabbix/zabbix-server-mysql:7.0-ubuntu-latest
+    container_name: zabbix_server
+    environment:
+      DB_SERVER_HOST: zabbix_db
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      ZBX_STARTPINGERS: 10
+    depends_on:
+      zabbix_db:
+        condition: service_healthy
+    ports:
+      - "10051:10051"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data/zabbix-server/alertscripts:/usr/lib/zabbix/alertscripts:ro
+      - ./data/zabbix-server/externalscripts:/usr/lib/zabbix/externalscripts:ro
+    networks:
+      dc_zzz:
+        ipv4_address: 172.20.20.22
+      dc_aaa: # To see hosts in both DC
+        ipv4_address: 172.20.10.22       
+    restart: unless-stopped
+
+  # --- Zabbix Web ---
+  zabbix_web:
+    image: zabbix/zabbix-web-nginx-mysql:7.0-ubuntu-latest
+    container_name: zabbix_web
+    environment:
+      DB_SERVER_HOST: zabbix_db
+      MYSQL_DATABASE: zabbix
+      MYSQL_USER: zabbix
+      MYSQL_PASSWORD: zabbix
+      ZBX_SERVER_HOST: zabbix_server
+      ZBX_SERVER_NAME: Zabbix on dc-aaa.lv
+      PHP_TZ: Europe/Riga
+    depends_on:
+      - zabbix_server
+    ports:
+      - "8080:8080"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data/zabbix-web/modules:/usr/share/zabbix/modules:ro
+    networks:
+      dc_zzz:
+        ipv4_address: 172.20.20.23
+      public_net: {}
+    restart: unless-stopped
+
+volumes:
+  zabbix_db_data:
+  squid_cache: # Adding volume Squid cache
+
+networks:
+  dc_aaa:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.10.0/24
+
+  dc_zzz:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.20.20.0/24
+
+  repo_net:
+    internal: true
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+
+  public_net:
+    driver: bridge       
+    

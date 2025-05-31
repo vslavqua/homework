@@ -1,0 +1,7 @@
+new_user: ansible
+
+ntp_dc_aaa: 172.20.10.20
+ntp_dc_zzz: 172.20.20.20
+
+zabbix_server: 172.20.10.22,172.20.20.22
+zabbix_server_active: 172.20.10.22

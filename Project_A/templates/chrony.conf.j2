@@ -1,0 +1,14 @@
+{% if inventory_hostname in groups['dc_aaa'] %}
+pool 172.20.10.20 iburst
+{% elif inventory_hostname in groups['dc_zzz'] %}
+pool 172.20.20.20 iburst
+{% else %}
+pool 0.pool.ntp.org iburst
+{% endif %}
+
+driftfile /var/lib/chrony/chrony.drift
+makestep 1.0 3
+logdir /var/log/chrony
+cmdport 323
+bindcmdaddress 127.0.0.1
+bindcmdaddress ::1

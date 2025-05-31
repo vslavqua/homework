@@ -1,0 +1,30 @@
+all:
+  children:
+    dc_aaa:
+      hosts:
+        hostname1:
+          ansible_connection: docker
+          ansible_python_interpreter: /usr/bin/python3.9
+        hostname4:
+          ansible_connection: docker
+          ansible_python_interpreter: /usr/bin/python3.9
+
+    dc_zzz:
+      hosts:
+        hostname2:
+          ansible_connection: docker
+          ansible_python_interpreter: /usr/bin/python3.9
+        hostname3:
+          ansible_connection: docker
+          ansible_python_interpreter: /usr/bin/python3.9
+        hostname5:
+          ansible_connection: docker
+          ansible_python_interpreter: /usr/bin/python3.9
+
+    chrony_clients:
+      hosts:
+        hostname1:
+        hostname2:
+        hostname3:
+        hostname4:
+        hostname5:

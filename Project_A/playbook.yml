@@ -1,0 +1,113 @@
+# Lietotāja pievienošana. Lietotājam ir sudo tiesības
+- name: Create user with sudo privileges on all hosts
+  hosts: all
+  become: true
+  tasks:
+    - name: Create user with sudo privileges
+      user:
+        name: "{{ new_user }}"
+        groups: sudo
+        append: yes
+        shell: /bin/bash
+        create_home: yes
+
+# Uzinstalēt un nokonfigurēt chrony laika sinhronizāciju. Katram datucentram pieejams savs NTP serveris
+- name: Install and configure Chrony
+  hosts: chrony_clients
+  become: true
+  tasks:
+    - name: Install chrony
+      apt:
+        name: chrony
+        state: present
+        update_cache: yes
+
+    - name: Ensure chrony log directory exists
+      file:
+        path: /var/log/chrony
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Configure chrony
+      template:
+        src: chrony.conf.j2
+        dest: /etc/chrony/chrony.conf
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Start chronyd in background
+      shell: chronyd -f /etc/chrony/chrony.conf &
+      args:
+        executable: /bin/bash
+
+# Uzinstalēt un nokonfigurēt Zabbix agent2. 
+- name: Install and configure Zabbix Agent2
+  hosts: chrony_clients
+  become: true
+  vars:
+    proxy_env:
+      http_proxy: "http://172.30.0.10:3128"
+      https_proxy: "http://172.30.0.10:3128"
+  tasks:
+    - name: Install gnupg (for apt_key)
+      apt:
+        name: gnupg
+        state: present
+        update_cache: yes
+      environment: "{{ proxy_env }}"
+
+    - name: Add Zabbix repository key
+      apt_key:
+        url: https://repo.zabbix.com/zabbix-official-repo.key
+        state: present
+      environment: "{{ proxy_env }}"
+
+    - name: Add Zabbix repository
+      apt_repository:
+        repo: "deb https://repo.zabbix.com/zabbix/7.0/debian bullseye main"
+        state: present
+      environment: "{{ proxy_env }}"
+
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+      environment: "{{ proxy_env }}"
+
+    - name: Install Zabbix Agent2
+      apt:
+        name: zabbix-agent2
+        state: present
+        update_cache: yes
+      environment: "{{ proxy_env }}"
+
+    - name: Ensure Zabbix log directory exists
+      file:
+        path: /var/log/zabbix
+        state: directory
+        owner: zabbix
+        group: zabbix
+        mode: '0755'
+
+    - name: Configure Zabbix Agent2
+      template:
+        src: zabbix_agent2.conf.j2
+        dest: /etc/zabbix/zabbix_agent2.conf
+        owner: root
+        group: root
+        mode: '0644'
+      notify: Restart zabbix-agent2
+
+    - name: Start Zabbix Agent2 manually in containers
+      shell: /usr/sbin/zabbix_agent2 -f &
+      args:
+        executable: /bin/bash
+      when: ansible_virtualization_type == "docker"
+
+  handlers:
+    - name: Restart zabbix-agent2
+      service:
+        name: zabbix-agent2
+        state: restarted
