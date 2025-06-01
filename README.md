@@ -67,7 +67,10 @@ Pēc Ansible izpildes:
 ### Visiem hostiem pieejams    
 * Сentrālais proxy serveris: squid_proxy
 
-![Tīkla shēma](network-diagram.png)
+## Tīkla shēma
+<p align="center">
+  <img src="network-diagram.png" alt="Tīkla shēma" width="700"/>
+</p>
 
 ## Instalēšana
 
