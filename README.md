@@ -69,7 +69,7 @@ Pēc Ansible izpildes:
 
 ## Tīkla shēma
 <p align="center">
-  <img src="network-diagram.png" alt="Tīkla shēma" width="700"/>
+  <img src="network-diagram.png" alt="Tīkla shēma" width="600"/>
 </p>
 
 ## Instalēšana
