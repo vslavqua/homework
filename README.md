@@ -114,3 +114,8 @@ Check Zabbix frontend:
 * Navigate to Monitoring → Latest Data
 * Filter by hostname* hosts
 You should see metrics like system.uname, system.cpu.load, and others.
+
+
+## Author: 
+* Vjaceslavs S.
+* https://vslavqua.github.io/
