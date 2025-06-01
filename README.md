@@ -24,43 +24,50 @@ Pēc Ansible izpildes:
 
 ## Projekta struktūra
 ```
-├── Project_A/                # Ansible konfigurācijas
-│   ├── ansible.cfg             # Ansible konfigurācijas fails
-│   ├── inventory.yml           # Inventarizācijas fails ar grupām dc_aaa un dc_zzz
-│   ├── playbook.yml            # Playbook: Izveido lietotāju, instalē un konfigurē Chrony un Zabbix-agent2
-│   ├── group_vars/             # Visi mainīgie
-│   │   └── all.yml             
-│   └── templates/              # konfigurācijas faili
-│       ├── chrony.conf.j2
-│       └── zabbix_agent2.conf.j2
-│
-├── Project_D/                # Docker infrastruktūra
-│   ├── docker-compose.yml      # Veido visu vidi, izmantojot konteinerus
-│   ├── squid.conf              # Squid proxy konfigurācija
-│   ├── ntp/                    # NTP serveru (Chrony) konfigurācijas
-│   │   ├── chrony-aaa.conf
-│   │   └── chrony-zzz.conf
-│   └── host/                   # Satur Dockerfile un entrypoint.sh konteineru hostiem
-│       ├── Dockerfile
-│       └── entrypoint.sh
+.
+├── Project_A                       # Ansible konfigurācijas
+│   ├── ansible.cfg                     # Ansible konfigurācijas fails
+│   ├── group_vars                      # Visi mainīgie
+│   │   └── all.yml
+│   ├── inventory.yml                   # Inventarizācijas fails ar grupām dc_aaa un dc_zzz
+│   ├── playbook.yml                    # Playbook: Izveido lietotāju, instalē un konfigurē Chrony un Zabbix-agent2
+│   └── templates                       # konfigurācijas faili
+│       ├── chrony.conf.j2
+│       └── zabbix_agent2.conf.j2
+├── Project_D                       # Docker infrastruktūra
+│   ├── data
+│   │   ├── zabbix-server
+│   │   │   ├── alertscripts
+│   │   │   └── externalscripts
+│   │   └── zabbix-web
+│   │       └── modules
+│   ├── docker-compose.yml              # Veido visu vidi, izmantojot konteinerus
+│   ├── host                            # Satur Dockerfile un entrypoint.sh konteineru hostiem
+│   │   ├── Dockerfile
+│   │   └── entrypoint.sh
+│   ├── ntp                             # NTP serveru (Chrony) konfigurācijas
+│   │   ├── Dockerfile
+│   │   ├── chrony-aaa.conf
+│   │   └── chrony-zzz.conf
+│   └── squid.conf                      # Squid proxy konfigurācija
 ```
 
 ## Serveru infrastruktūra
 ### Datacenter AAA:
 * Hosti: hostname1, hostname4
 * NTP server: ntp-aaa
-* Zabbix server + proxy: zabbix_server
-* Zabbix DB: zabbix_db
-* Frontend Zabbix portāls: zabbix_web
 
 ### Datacenter ZZZ:
 * Hosti: hostname2, hostname3, hostname5
- * NTP server: ntp-zzz
+* NTP server: ntp-zzz
+* Zabbix server + proxy: zabbix_server
+* Zabbix DB: zabbix_db
+* Frontend Zabbix portāls: zabbix_web 
 
 ### Visiem hostiem pieejams    
 * Сentrālais proxy serveris: squid_proxy
 
-
+![Tīkla shēma](network-diagram.png)
 
 ## Instalēšana
 
