@@ -45,18 +45,19 @@ Pēc Ansible izpildes:
 │       └── entrypoint.sh
 ```
 
-## Datacenter AAA:
+## Serveru infrastruktūra
+### Datacenter AAA:
     Hosti: hostname1, hostname4
     NTP server: ntp-aaa
     Zabbix server + proxy: zabbix_server
     Zabbix DB: zabbix_db
     Frontend Zabbix portāls: zabbix_web
 
-## Datacenter ZZZ:
+### Datacenter ZZZ:
     Hosti: hostname2, hostname3, hostname5
     NTP server: ntp-zzz
 
-## Visiem hostiem pieejams    
+### Visiem hostiem pieejams    
     Сentrālais proxy serveris: squid_proxy
 
 
